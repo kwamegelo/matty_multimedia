@@ -14,6 +14,7 @@ let currentPackageImage = null;
 let timeSlots = [];
 let unreadNotifications = 0;
 let notificationCheckInterval = null;
+let allNotifications = [];
 let revenueChart, bookingStatusChart, monthlyRevenueChart, categoryChart, sourceChart;
 
 // ===============================================
@@ -1974,3 +1975,905 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 console.log('✅ Admin Package Management System Loaded');
+
+
+
+/* ========================================================================
+   PASTE THIS INTO YOUR ADMIN-APP.JS FILE
+   Add these functions to make notifications and analytics work
+   ======================================================================== */
+
+// ===============================================
+// NOTIFICATIONS SYSTEM - ADD THIS CODE
+// ===============================================
+
+// Load Notifications Function
+async function loadNotifications() {
+    try {
+        console.log('📬 Loading notifications...');
+        
+        // Sample notifications (replace with your actual data)
+        const sampleNotifications = [
+            {
+                id: '1',
+                type: 'new_booking',
+                title: 'New Booking Received',
+                message: 'A new portrait session has been booked',
+                booking_reference: 'MTY-' + Date.now().toString().slice(-6),
+                is_important: true,
+                is_read: false,
+                created_at: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+                action_url: '#bookings',
+                action_label: 'View Booking'
+            },
+            {
+                id: '2',
+                type: 'payment_received',
+                title: 'Payment Confirmed',
+                message: 'Deposit payment of GH₵ 500 received',
+                booking_reference: 'MTY-' + Date.now().toString().slice(-5),
+                is_important: false,
+                is_read: false,
+                created_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+                action_url: '#bookings',
+                action_label: 'View Details'
+            },
+            {
+                id: '3',
+                type: 'session_completed',
+                title: 'Session Completed',
+                message: 'Wedding photography session marked as complete',
+                booking_reference: 'MTY-' + Date.now().toString().slice(-4),
+                is_important: false,
+                is_read: true,
+                created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+                action_url: '#bookings',
+                action_label: 'View Session'
+            },
+            {
+                id: '4',
+                type: 'client_message',
+                title: 'New Client Message',
+                message: 'Client inquiry about wedding package',
+                is_important: false,
+                is_read: false,
+                created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+                action_url: '#clients'
+            }
+        ];
+        
+        // Try to get real notifications from database
+        let notifications = sampleNotifications;
+        
+        try {
+            const { data, error } = await supabase.rpc('get_admin_notifications', {
+                include_read: false,
+                limit_count: 20
+            });
+            
+            if (!error && data && data.length > 0) {
+                notifications = data;
+                console.log('✅ Loaded real notifications:', data.length);
+            } else {
+                console.log('ℹ️ Using sample notifications');
+            }
+        } catch (rpcError) {
+            console.log('ℹ️ RPC not available, using sample data');
+        }
+        
+        allNotifications = notifications;
+        unreadNotifications = notifications.filter(n => !n.is_read).length;
+        
+        updateNotificationBadges();
+        displayNotifications(notifications);
+        
+        console.log(`✅ ${unreadNotifications} unread notifications`);
+        
+    } catch (error) {
+        console.error('❌ Error loading notifications:', error);
+        displayNotifications([]);
+    }
+}
+
+// Update Notification Badges
+function updateNotificationBadges() {
+    const badge = document.getElementById('notificationBadge');
+    const mobileBadge = document.getElementById('mobileNotificationBadge');
+    
+    if (badge) {
+        badge.textContent = unreadNotifications;
+        badge.style.display = unreadNotifications > 0 ? 'flex' : 'none';
+    }
+    
+    if (mobileBadge) {
+        mobileBadge.textContent = unreadNotifications;
+        mobileBadge.style.display = unreadNotifications > 0 ? 'flex' : 'none';
+    }
+}
+
+// Handle Notification Click
+async function handleNotificationClick(notificationId, actionUrl) {
+    try {
+        // Mark as read in local state
+        const notif = allNotifications.find(n => n.id === notificationId);
+        if (notif && !notif.is_read) {
+            notif.is_read = true;
+            unreadNotifications = Math.max(0, unreadNotifications - 1);
+            updateNotificationBadges();
+            displayNotifications(allNotifications);
+        }
+        
+        // Try to mark as read in database
+        try {
+            await supabase.rpc('mark_notification_read', {
+                notification_id: notificationId
+            });
+        } catch (error) {
+            console.log('Could not mark notification as read in DB');
+        }
+        
+        // Navigate if action URL provided
+        if (actionUrl && actionUrl !== '#') {
+            if (actionUrl.includes('#')) {
+                const page = actionUrl.split('#')[1];
+                switchPage(page);
+                toggleNotificationsPanel();
+            } else {
+                window.location.href = actionUrl;
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error handling notification:', error);
+    }
+}
+
+// Mark All Notifications Read
+async function markAllNotificationsRead() {
+    try {
+        allNotifications.forEach(n => n.is_read = true);
+        unreadNotifications = 0;
+        updateNotificationBadges();
+        displayNotifications(allNotifications);
+        
+        try {
+            await supabase.rpc('mark_all_notifications_read');
+        } catch (error) {
+            console.log('Could not mark all as read in DB');
+        }
+        
+        showToast('All notifications marked as read', 'success');
+    } catch (error) {
+        console.error('Error marking notifications read:', error);
+        showToast('Error updating notifications', 'error');
+    }
+}
+
+// Start Notification Polling (check every 30 seconds)
+function startNotificationPolling() {
+    notificationCheckInterval = setInterval(() => {
+        loadNotifications();
+    }, 30000);
+    console.log('✅ Notification polling started');
+}
+
+// Stop Notification Polling
+function stopNotificationPolling() {
+    if (notificationCheckInterval) {
+        clearInterval(notificationCheckInterval);
+        notificationCheckInterval = null;
+        console.log('⏹️ Notification polling stopped');
+    }
+}
+
+// ===============================================
+// ANALYTICS CHARTS - ADD THIS CODE
+// ===============================================
+
+
+// Initialize Analytics Charts
+async function initializeAnalyticsCharts() {
+    if (typeof Chart === 'undefined') {
+        console.warn('Chart.js not loaded');
+        return;
+    }
+    
+    try {
+        const { data, error } = await supabase.rpc('get_admin_dashboard_stats');
+        if (error) throw error;
+        
+        // Monthly Revenue Chart
+        const monthlyCtx = document.getElementById('monthlyRevenueChart');
+        if (monthlyCtx && data?.revenue_trend_30_days) {
+            const trendData = data.revenue_trend_30_days;
+            const labels = trendData.map(d => formatDateShort(d.date));
+            const revenues = trendData.map(d => d.revenue);
+            
+            if (monthlyRevenueChart) monthlyRevenueChart.destroy();
+            monthlyRevenueChart = new Chart(monthlyCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Daily Revenue (GH₵)',
+                        data: revenues,
+                        backgroundColor: 'rgba(0, 122, 255, 0.8)',
+                        borderColor: '#007AFF',
+                        borderWidth: 1,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Revenue Over Last 30 Days',
+                            font: { size: 16, weight: 'bold' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => 'GH₵ ' + formatCurrency(context.parsed.y)
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => 'GH₵ ' + value.toLocaleString()
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Category Distribution Chart
+        const categoryCtx = document.getElementById('categoryChart');
+        if (categoryCtx && allBookings.length > 0) {
+            const categories = {};
+            allBookings.forEach(booking => {
+                const cat = booking.package_category || 'Other';
+                categories[cat] = (categories[cat] || 0) + 1;
+            });
+            
+            const categoryLabels = Object.keys(categories);
+            const categoryData = Object.values(categories);
+            const categoryColors = [
+                '#007AFF', '#34C759', '#FF9500', '#FF3B30', 
+                '#5AC8FA', '#AF52DE', '#FF2D55', '#A2845E'
+            ];
+            
+            if (categoryChart) categoryChart.destroy();
+            categoryChart = new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: categoryLabels,
+                    datasets: [{
+                        data: categoryData,
+                        backgroundColor: categoryColors.slice(0, categoryLabels.length),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { padding: 15, font: { size: 12 } }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Bookings by Category',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Client Source Chart
+        const sourceCtx = document.getElementById('sourceChart');
+        if (sourceCtx && allClients.length > 0) {
+            const sources = {
+                'Instagram': 0,
+                'Referral': 0,
+                'Website': 0,
+                'Other': 0
+            };
+            
+            allClients.forEach(client => {
+                const source = client.source || 'Website';
+                if (sources.hasOwnProperty(source)) {
+                    sources[source]++;
+                } else {
+                    sources['Other']++;
+                }
+            });
+            
+            const sourceLabels = Object.keys(sources);
+            const sourceData = Object.values(sources);
+            const sourceColors = ['#FF3B30', '#007AFF', '#34C759', '#8E8E93'];
+            
+            if (sourceChart) sourceChart.destroy();
+            sourceChart = new Chart(sourceCtx, {
+                type: 'pie',
+                data: {
+                    labels: sourceLabels,
+                    datasets: [{
+                        data: sourceData,
+                        backgroundColor: sourceColors,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { padding: 15, font: { size: 12 } }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Client Sources',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        console.log('✅ Analytics charts initialized');
+        
+    } catch (error) {
+        console.error('❌ Analytics charts error:', error);
+    }
+}
+
+// Load Analytics Page
+async function loadAnalyticsPage() {
+    showLoadingOverlay(true);
+    try {
+        await initializeAnalyticsCharts();
+        console.log('✅ Analytics loaded successfully');
+    } catch (error) {
+        console.error('❌ Analytics error:', error);
+    } finally {
+        showLoadingOverlay(false);
+    }
+}
+
+// ===============================================
+// UPDATE YOUR showDashboard() FUNCTION
+// ===============================================
+// Find your existing showDashboard function and update it to include notifications:
+
+/*
+async function showDashboard() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboardContent').style.display = 'flex';
+    
+    const adminNameEl = document.getElementById('adminName');
+    const mobileAdminNameEl = document.getElementById('mobileAdminName');
+    const mobileAdminEmailEl = document.getElementById('mobileAdminEmail');
+    
+    if (adminNameEl) adminNameEl.textContent = currentUser.email;
+    if (mobileAdminNameEl) mobileAdminNameEl.textContent = currentUser.email;
+    if (mobileAdminEmailEl) mobileAdminEmailEl.textContent = currentUser.email;
+    
+    // Load all dashboard data
+    await loadDashboardData();
+    
+    // START NOTIFICATIONS - ADD THIS
+    await loadNotifications();
+    startNotificationPolling();
+    
+    // INITIALIZE ANALYTICS - ADD THIS
+    await initializeAnalyticsCharts();
+}
+*/
+
+// ===============================================
+// UPDATE YOUR handleLogout() FUNCTION
+// ===============================================
+// Find your existing handleLogout function and add this line:
+
+/*
+async function handleLogout() {
+    showLoadingOverlay(true);
+    try {
+        stopNotificationPolling(); // ADD THIS LINE
+        await supabase.auth.signOut();
+        currentUser = null;
+        showLoginScreen();
+    } catch (error) {
+        alert('Error logging out: ' + error.message);
+    } finally {
+        showLoadingOverlay(false);
+    }
+}
+*/
+
+// ===============================================
+// ADD EVENT LISTENERS
+// ===============================================
+// Add these to your DOMContentLoaded event:
+
+/*
+document.addEventListener('DOMContentLoaded', () => {
+    // ... your existing code ...
+    
+    // ADD THESE EVENT LISTENERS:
+    
+    // Notification button
+    document.getElementById('notificationBtn')?.addEventListener('click', toggleNotificationsPanel);
+    
+    // Mark all read button  
+    document.getElementById('markAllReadBtn')?.addEventListener('click', markAllNotificationsRead);
+    
+    // Analytics page navigation
+    document.querySelectorAll('[data-page="analytics"]').forEach(item => {
+        item.addEventListener('click', () => {
+            setTimeout(loadAnalyticsPage, 100);
+        });
+    });
+});
+*/
+
+
+// ===============================================
+// ANALYTICS FUNCTIONS - WORKING IMPLEMENTATION
+// ===============================================
+
+// Initialize Analytics Charts
+async function initializeAnalyticsCharts() {
+    if (typeof Chart === 'undefined') {
+        console.warn('Chart.js not loaded');
+        return;
+    }
+    
+    try {
+        // Get analytics data
+        const { data, error } = await supabase.rpc('get_admin_dashboard_stats');
+        
+        if (error) throw error;
+        
+        // Monthly Revenue Chart
+        const monthlyCtx = document.getElementById('monthlyRevenueChart');
+        if (monthlyCtx && data?.revenue_trend_30_days) {
+            const trendData = data.revenue_trend_30_days;
+            const labels = trendData.map(d => formatDateShort(d.date));
+            const revenues = trendData.map(d => d.revenue);
+            
+            if (monthlyRevenueChart) monthlyRevenueChart.destroy();
+            monthlyRevenueChart = new Chart(monthlyCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Daily Revenue (GH₵)',
+                        data: revenues,
+                        backgroundColor: 'rgba(0, 122, 255, 0.8)',
+                        borderColor: '#007AFF',
+                        borderWidth: 1,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Revenue Over Last 30 Days',
+                            font: { size: 16, weight: 'bold' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => 'GH₵ ' + formatCurrency(context.parsed.y)
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => 'GH₵ ' + value.toLocaleString()
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Category Distribution Chart
+        const categoryCtx = document.getElementById('categoryChart');
+        if (categoryCtx && allBookings.length > 0) {
+            const categories = {};
+            allBookings.forEach(booking => {
+                const cat = booking.package_category || 'Other';
+                categories[cat] = (categories[cat] || 0) + 1;
+            });
+            
+            const categoryLabels = Object.keys(categories);
+            const categoryData = Object.values(categories);
+            const categoryColors = [
+                '#007AFF', '#34C759', '#FF9500', '#FF3B30', 
+                '#5AC8FA', '#AF52DE', '#FF2D55', '#A2845E'
+            ];
+            
+            if (categoryChart) categoryChart.destroy();
+            categoryChart = new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: categoryLabels,
+                    datasets: [{
+                        data: categoryData,
+                        backgroundColor: categoryColors.slice(0, categoryLabels.length),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { padding: 15, font: { size: 12 } }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Bookings by Category',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Client Source Chart
+        const sourceCtx = document.getElementById('sourceChart');
+        if (sourceCtx && allClients.length > 0) {
+            const sources = {
+                'Instagram': 0,
+                'Referral': 0,
+                'Website': 0,
+                'Other': 0
+            };
+            
+            allClients.forEach(client => {
+                const source = client.source || 'Website';
+                if (sources.hasOwnProperty(source)) {
+                    sources[source]++;
+                } else {
+                    sources['Other']++;
+                }
+            });
+            
+            const sourceLabels = Object.keys(sources);
+            const sourceData = Object.values(sources);
+            const sourceColors = ['#FF3B30', '#007AFF', '#34C759', '#8E8E93'];
+            
+            if (sourceChart) sourceChart.destroy();
+            sourceChart = new Chart(sourceCtx, {
+                type: 'pie',
+                data: {
+                    labels: sourceLabels,
+                    datasets: [{
+                        data: sourceData,
+                        backgroundColor: sourceColors,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { padding: 15, font: { size: 12 } }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Client Sources',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    }
+                }
+            });
+        }
+        
+    } catch (error) {
+        console.error('Analytics charts error:', error);
+    }
+}
+
+// Load Analytics Page
+async function loadAnalyticsPage() {
+    showLoadingOverlay(true);
+    try {
+        await initializeAnalyticsCharts();
+        console.log('✅ Analytics loaded successfully');
+    } catch (error) {
+        console.error('❌ Analytics error:', error);
+    } finally {
+        showLoadingOverlay(false);
+    }
+}
+
+// ===============================================
+// NOTIFICATIONS - WORKING IMPLEMENTATION
+// ===============================================
+
+
+// Load Notifications
+async function loadNotifications() {
+    try {
+        console.log('📬 Loading notifications...');
+        
+        // For demo purposes, create sample notifications if no RPC exists
+        const sampleNotifications = [
+            {
+                id: '1',
+                type: 'new_booking',
+                title: 'New Booking Received',
+                message: 'A new portrait session has been booked',
+                booking_reference: 'MTY-' + Date.now().toString().slice(-6),
+                is_important: true,
+                is_read: false,
+                created_at: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+                action_url: '#bookings',
+                action_label: 'View Booking'
+            },
+            {
+                id: '2',
+                type: 'payment_received',
+                title: 'Payment Confirmed',
+                message: 'Deposit payment of GH₵ 500 received',
+                booking_reference: 'MTY-' + Date.now().toString().slice(-5),
+                is_important: false,
+                is_read: false,
+                created_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+                action_url: '#bookings',
+                action_label: 'View Details'
+            },
+            {
+                id: '3',
+                type: 'session_completed',
+                title: 'Session Completed',
+                message: 'Wedding photography session marked as complete',
+                booking_reference: 'MTY-' + Date.now().toString().slice(-4),
+                is_important: false,
+                is_read: true,
+                created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+                action_url: '#bookings',
+                action_label: 'View Session'
+            }
+        ];
+        
+        // Try to get real notifications, fallback to samples
+        let notifications = sampleNotifications;
+        
+        try {
+            const { data, error } = await supabase.rpc('get_admin_notifications', {
+                include_read: false,
+                limit_count: 20
+            });
+            
+            if (!error && data && data.length > 0) {
+                notifications = data;
+                console.log('✅ Loaded real notifications:', data.length);
+            } else {
+                console.log('ℹ️ Using sample notifications');
+            }
+        } catch (rpcError) {
+            console.log('ℹ️ RPC not available, using sample notifications');
+        }
+        
+        allNotifications = notifications;
+        unreadNotifications = notifications.filter(n => !n.is_read).length;
+        
+        // Update notification badges
+        updateNotificationBadges();
+        
+        // Display notifications
+        displayNotifications(notifications);
+        
+        console.log(`✅ ${unreadNotifications} unread notifications`);
+        
+    } catch (error) {
+        console.error('❌ Error loading notifications:', error);
+        displayNotifications([]);
+    }
+}
+
+// Update Notification Badges
+function updateNotificationBadges() {
+    const badge = document.getElementById('notificationBadge');
+    const mobileBadge = document.getElementById('mobileNotificationBadge');
+    
+    if (badge) {
+        badge.textContent = unreadNotifications;
+        badge.style.display = unreadNotifications > 0 ? 'flex' : 'none';
+    }
+    
+    if (mobileBadge) {
+        mobileBadge.textContent = unreadNotifications;
+        mobileBadge.style.display = unreadNotifications > 0 ? 'flex' : 'none';
+    }
+}
+
+// Display Notifications
+function displayNotifications(notifications) {
+    const container = document.getElementById('notificationsList');
+    if (!container) return;
+    
+    if (notifications.length === 0) {
+        container.innerHTML = `
+            <div class="no-notifications">
+                <i class="fas fa-bell-slash"></i>
+                <p>No new notifications</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = notifications.map(notif => `
+        <div class="notification-item ${notif.is_important ? 'important' : ''} ${notif.is_read ? 'read' : ''}" 
+             onclick="handleNotificationClick('${notif.id}', '${notif.action_url || '#'}')">
+            <div class="notification-icon ${notif.type}">
+                <i class="fas fa-${getNotificationIcon(notif.type)}"></i>
+            </div>
+            <div class="notification-content">
+                <div class="notification-title">${escapeHtml(notif.title)}</div>
+                <div class="notification-message">${escapeHtml(notif.message)}</div>
+                ${notif.booking_reference ? `
+                    <div class="notification-meta">
+                        <span class="notification-ref">${escapeHtml(notif.booking_reference)}</span>
+                    </div>
+                ` : ''}
+                <div class="notification-time">${formatTimeAgo(notif.created_at)}</div>
+            </div>
+            ${notif.action_label ? `
+                <button class="notification-action">${escapeHtml(notif.action_label)}</button>
+            ` : ''}
+        </div>
+    `).join('');
+}
+
+// Get Notification Icon
+function getNotificationIcon(type) {
+    const icons = {
+        'new_booking': 'calendar-plus',
+        'payment_received': 'money-bill-wave',
+        'session_completed': 'check-circle',
+        'cancellation': 'times-circle',
+        'client_message': 'comment',
+        'system': 'info-circle'
+    };
+    return icons[type] || 'bell';
+}
+
+// Handle Notification Click
+async function handleNotificationClick(notificationId, actionUrl) {
+    try {
+        // Mark as read in local state
+        const notif = allNotifications.find(n => n.id === notificationId);
+        if (notif && !notif.is_read) {
+            notif.is_read = true;
+            unreadNotifications = Math.max(0, unreadNotifications - 1);
+            updateNotificationBadges();
+            displayNotifications(allNotifications);
+        }
+        
+        // Try to mark as read in database
+        try {
+            await supabase.rpc('mark_notification_read', {
+                notification_id: notificationId
+            });
+        } catch (error) {
+            console.log('Could not mark notification as read in DB');
+        }
+        
+        // Navigate if action URL provided
+        if (actionUrl && actionUrl !== '#') {
+            if (actionUrl.includes('#')) {
+                const page = actionUrl.split('#')[1];
+                switchPage(page);
+                toggleNotificationsPanel(); // Close panel
+            } else {
+                window.location.href = actionUrl;
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error handling notification:', error);
+    }
+}
+
+// Toggle Notifications Panel
+function toggleNotificationsPanel() {
+    const panel = document.getElementById('notificationsPanel');
+    if (panel) {
+        const isShowing = panel.classList.contains('show');
+        panel.classList.toggle('show');
+        
+        // If opening and there are unread notifications, mark them as seen
+        if (!isShowing && unreadNotifications > 0) {
+            // Give visual feedback that user saw them
+            setTimeout(() => {
+                // Could add logic here to mark as "seen" vs "read"
+            }, 1000);
+        }
+    }
+}
+
+// Mark All Notifications Read
+async function markAllNotificationsRead() {
+    try {
+        // Update local state
+        allNotifications.forEach(n => n.is_read = true);
+        unreadNotifications = 0;
+        updateNotificationBadges();
+        displayNotifications(allNotifications);
+        
+        // Try to update database
+        try {
+            await supabase.rpc('mark_all_notifications_read');
+        } catch (error) {
+            console.log('Could not mark all as read in DB');
+        }
+        
+        showToast('All notifications marked as read', 'success');
+    } catch (error) {
+        console.error('Error marking notifications read:', error);
+        showToast('Error updating notifications', 'error');
+    }
+}
+
+// Start Notification Polling
+function startNotificationPolling() {
+    // Check for new notifications every 30 seconds
+    notificationCheckInterval = setInterval(() => {
+        loadNotifications();
+    }, 30000);
+    
+    console.log('✅ Notification polling started');
+}
+
+// Stop Notification Polling
+function stopNotificationPolling() {
+    if (notificationCheckInterval) {
+        clearInterval(notificationCheckInterval);
+        notificationCheckInterval = null;
+        console.log('⏹️ Notification polling stopped');
+    }
+}
+
+// Add notification event listeners to DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+    // Notification button
+    const notifBtn = document.getElementById('notificationBtn');
+    if (notifBtn) {
+        notifBtn.addEventListener('click', toggleNotificationsPanel);
+    }
+    
+    // Mark all read button
+    const markAllBtn = document.getElementById('markAllReadBtn');
+    if (markAllBtn) {
+        markAllBtn.addEventListener('click', markAllNotificationsRead);
+    }
+    
+    // Load analytics when analytics page is shown
+    document.querySelectorAll('[data-page="analytics"]').forEach(item => {
+        item.addEventListener('click', () => {
+            setTimeout(loadAnalyticsPage, 100);
+        });
+    });
+});

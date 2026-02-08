@@ -872,36 +872,55 @@ const BookingFlow = {
   },
 
   // ENHANCED: Display ALL package details from database
-  displaySelectedPackageInStep1(pkg) {
+  // ============================================
+// ENHANCED PACKAGE DISPLAY FOR STEP 1
+// Shows ALL package information from database
+// ============================================
+
+// Replace the existing displaySelectedPackageInStep1 function in app.js with this enhanced version
+
+displaySelectedPackageInStep1(pkg) {
     const step1Container = document.getElementById('bookingStep1');
     if (!step1Container) return;
 
     // Get image URL
     let imageUrl = 'images/default-package.jpg';
     if (pkg.image_path && window.supabaseClient) {
-      try {
-        const { data } = window.supabaseClient.storage
-          .from('package-images')
-          .getPublicUrl(pkg.image_path);
-        
-        if (data && data.publicUrl) {
-          imageUrl = data.publicUrl;
+        try {
+            const { data } = window.supabaseClient.storage
+                .from('package-images')
+                .getPublicUrl(pkg.image_path);
+            
+            if (data && data.publicUrl) {
+                imageUrl = data.publicUrl;
+            }
+        } catch (e) {
+            console.warn('Could not load image:', e);
         }
-      } catch (e) {
-        console.warn('Could not load image:', e);
-      }
     }
 
-    // Parse features - SHOW ALL
+    // Parse features array
     let features = [];
     try {
-      if (typeof pkg.features === 'string') {
-        features = JSON.parse(pkg.features);
-      } else if (Array.isArray(pkg.features)) {
-        features = pkg.features;
-      }
+        if (typeof pkg.features === 'string') {
+            features = JSON.parse(pkg.features);
+        } else if (Array.isArray(pkg.features)) {
+            features = pkg.features;
+        }
     } catch (e) {
-      console.warn('Could not parse features:', e);
+        console.warn('Could not parse features:', e);
+    }
+
+    // Parse includes array
+    let includes = [];
+    try {
+        if (typeof pkg.includes === 'string') {
+            includes = JSON.parse(pkg.includes);
+        } else if (Array.isArray(pkg.includes)) {
+            includes = pkg.includes;
+        }
+    } catch (e) {
+        console.warn('Could not parse includes:', e);
     }
 
     const price = Utils.formatCurrency(pkg.price || 0);
@@ -913,6 +932,7 @@ const BookingFlow = {
       
       <div class="selected-package-display">
         <div class="selected-package-card">
+          <!-- Package Header with Image -->
           <div class="selected-package-header">
             <div class="selected-package-image">
               <img src="${imageUrl}" alt="${pkg.name}" onerror="this.src='images/default-package.jpg'" />
@@ -920,31 +940,59 @@ const BookingFlow = {
                 <i class="fas fa-check-circle"></i>
                 <span>Selected</span>
               </div>
+              ${pkg.is_featured ? `
+                <div class="featured-ribbon">
+                  <i class="fas fa-star"></i> Featured
+                </div>
+              ` : ''}
             </div>
           </div>
           
           <div class="selected-package-content">
+            <!-- Title Section -->
             <div class="selected-package-title-section">
               <h3 class="selected-package-name">${pkg.name}</h3>
               ${pkg.subtitle ? `<p class="selected-package-subtitle">${pkg.subtitle}</p>` : ''}
               ${pkg.category ? `<span class="package-category-badge">${pkg.category}</span>` : ''}
             </div>
             
-            <div class="package-description-full">
-              <h4><i class="fas fa-info-circle"></i> Description</h4>
-              <p>${pkg.description || 'Professional photography services tailored to your needs.'}</p>
-            </div>
+            <!-- Full Description -->
+            ${pkg.description ? `
+              <div class="package-description-full">
+                <h4><i class="fas fa-info-circle"></i> Description</h4>
+                <p>${pkg.description}</p>
+              </div>
+            ` : ''}
             
+            <!-- What's Included (from includes array) -->
+            ${includes.length > 0 ? `
+              <div class="selected-package-features">
+                <h4 class="features-title">
+                  <i class="fas fa-box"></i>
+                  What's Included
+                </h4>
+                <div class="features-grid">
+                  ${includes.map(item => `
+                    <div class="feature-item-selected">
+                      <i class="fas fa-check"></i>
+                      <span>${item}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+            
+            <!-- Key Features (from features array) -->
             ${features.length > 0 ? `
               <div class="selected-package-features">
                 <h4 class="features-title">
                   <i class="fas fa-star"></i>
-                  What's Included
+                  Key Features
                 </h4>
                 <div class="features-grid">
                   ${features.map(feature => `
                     <div class="feature-item-selected">
-                      <i class="fas fa-check"></i>
+                      <i class="fas fa-check-circle"></i>
                       <span>${feature}</span>
                     </div>
                   `).join('')}
@@ -952,44 +1000,48 @@ const BookingFlow = {
               </div>
             ` : ''}
             
-            ${pkg.package_includes ? `
-              <div class="package-includes-section">
-                <h4><i class="fas fa-box"></i> Package Includes</h4>
-                <p>${pkg.package_includes}</p>
-              </div>
-            ` : ''}
-            
-            ${pkg.terms_and_conditions ? `
-              <div class="package-terms-preview">
-                <h4><i class="fas fa-file-contract"></i> Terms & Conditions</h4>
-                <p>${pkg.terms_and_conditions.substring(0, 200)}${pkg.terms_and_conditions.length > 200 ? '...' : ''}</p>
-              </div>
-            ` : ''}
-            
+            <!-- Package Details Meta Grid -->
             <div class="selected-package-meta">
-              <div class="meta-item">
-                <i class="fas fa-clock"></i>
-                <div>
-                  <span class="meta-label">Duration</span>
-                  <span class="meta-value">${pkg.duration || 'Flexible'}</span>
+              ${pkg.duration ? `
+                <div class="meta-item">
+                  <i class="fas fa-clock"></i>
+                  <div>
+                    <span class="meta-label">Duration</span>
+                    <span class="meta-value">${pkg.duration} minutes</span>
+                  </div>
                 </div>
-              </div>
-              <div class="meta-item">
-                <i class="fas fa-camera"></i>
-                <div>
-                  <span class="meta-label">Category</span>
-                  <span class="meta-value">${pkg.category || 'Photography'}</span>
+              ` : ''}
+              
+              ${pkg.category ? `
+                <div class="meta-item">
+                  <i class="fas fa-camera"></i>
+                  <div>
+                    <span class="meta-label">Category</span>
+                    <span class="meta-value">${pkg.category}</span>
+                  </div>
                 </div>
-              </div>
+              ` : ''}
+              
+              ${pkg.photo_count ? `
+                <div class="meta-item">
+                  <i class="fas fa-images"></i>
+                  <div>
+                    <span class="meta-label">Photos</span>
+                    <span class="meta-value">${pkg.photo_count} photos</span>
+                  </div>
+                </div>
+              ` : ''}
+              
               ${pkg.max_people ? `
                 <div class="meta-item">
                   <i class="fas fa-users"></i>
                   <div>
                     <span class="meta-label">Max People</span>
-                    <span class="meta-value">${pkg.max_people}</span>
+                    <span class="meta-value">${pkg.max_people} people</span>
                   </div>
                 </div>
               ` : ''}
+              
               ${pkg.delivery_time ? `
                 <div class="meta-item">
                   <i class="fas fa-shipping-fast"></i>
@@ -999,8 +1051,35 @@ const BookingFlow = {
                   </div>
                 </div>
               ` : ''}
+              
+              ${pkg.raw_photos_included !== undefined && pkg.raw_photos_included !== null ? `
+                <div class="meta-item">
+                  <i class="fas fa-file-image"></i>
+                  <div>
+                    <span class="meta-label">RAW Photos</span>
+                    <span class="meta-value">${pkg.raw_photos_included ? 'Included' : 'Not Included'}</span>
+                  </div>
+                </div>
+              ` : ''}
             </div>
             
+            <!-- Client Instructions -->
+            ${pkg.client_instructions ? `
+              <div class="package-instructions">
+                <h4><i class="fas fa-clipboard-list"></i> Client Instructions</h4>
+                <p>${pkg.client_instructions}</p>
+              </div>
+            ` : ''}
+            
+            <!-- Cancellation Policy -->
+            ${pkg.cancellation_policy ? `
+              <div class="package-policy">
+                <h4><i class="fas fa-file-contract"></i> Cancellation Policy</h4>
+                <p>${pkg.cancellation_policy}</p>
+              </div>
+            ` : ''}
+            
+            <!-- Pricing Breakdown -->
             <div class="selected-package-pricing">
               <div class="pricing-row">
                 <span class="pricing-label">Package Price</span>
@@ -1009,12 +1088,16 @@ const BookingFlow = {
               <div class="pricing-row deposit-row">
                 <span class="pricing-label">
                   <i class="fas fa-info-circle"></i>
-                  Deposit Required (30%)
+                  Deposit Required (${pkg.deposit_amount ? 'Custom' : '30%'})
                 </span>
                 <span class="pricing-value deposit-amount">${deposit}</span>
               </div>
+              <div class="pricing-note">
+                Balance due on session day
+              </div>
             </div>
             
+            <!-- Promotion Text -->
             ${pkg.promotion_text ? `
               <div class="package-promotion-full">
                 <i class="fas fa-tag"></i>
@@ -1022,6 +1105,19 @@ const BookingFlow = {
               </div>
             ` : ''}
             
+            <!-- Availability Status Notice -->
+            ${pkg.availability_status && pkg.availability_status !== 'available' ? `
+              <div class="availability-notice ${pkg.availability_status}">
+                <i class="fas fa-${pkg.availability_status === 'limited' ? 'exclamation-triangle' : 'times-circle'}"></i>
+                <span>
+                  ${pkg.availability_status === 'limited' 
+                    ? 'Limited availability - Book soon!' 
+                    : 'Currently unavailable'}
+                </span>
+              </div>
+            ` : ''}
+            
+            <!-- Change Package Button -->
             <div class="change-package-section">
               <button class="btn btn-secondary btn-sm" id="changePackageBtn">
                 <i class="fas fa-sync-alt"></i>
@@ -1031,39 +1127,13 @@ const BookingFlow = {
           </div>
         </div>
         
-        <div class="booking-info-card">
-          <div class="info-icon">
-            <i class="fas fa-lightbulb"></i>
-          </div>
-          <h4>Next Steps</h4>
-          <ol class="next-steps-list">
-            <li>
-              <i class="fas fa-calendar-alt"></i>
-              <span>Choose your preferred date and time</span>
-            </li>
-            <li>
-              <i class="fas fa-edit"></i>
-              <span>Provide session details and requirements</span>
-            </li>
-            <li>
-              <i class="fas fa-credit-card"></i>
-              <span>Complete deposit payment</span>
-            </li>
-            <li>
-              <i class="fas fa-check-circle"></i>
-              <span>Receive confirmation and prepare for your session</span>
-            </li>
-          </ol>
-          <div class="info-note">
-            <i class="fas fa-shield-alt"></i>
-            <p>Your booking is secure and can be rescheduled up to 48 hours before the session.</p>
-          </div>
-        </div>
+
       </div>
     `;
 
+    // Attach change package button handler
     document.getElementById('changePackageBtn')?.addEventListener('click', () => {
-      this.changePackage();
+        this.changePackage();
     });
   },
 
