@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matty Multimedia - Admin Dashboard</title>
+    <link rel="stylesheet" href="admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Image Preview Styles */
+        .image-preview {
+            margin-top: 10px;
+            border-radius: 8px;
+            overflow: hidden;
+            max-width: 300px;
+        }
+        
+        .image-preview img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .form-help {
+            display: block;
+            margin-top: 5px;
+            font-size: 12px;
+            color: #6B7280;
+        }
+        
+        /* Time Slots Modal Styles */
+        .day-section {
+            margin-bottom: 20px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        
+        .day-header h4 {
+            margin: 0;
+            color: #111827;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 13px;
+            background: #4F46E5;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .btn-small:hover {
+            background: #4338CA;
+        }
+        
+        .slots-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .time-slot-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            background: #F9FAFB;
+            border-radius: 6px;
+        }
+        
+        .slot-time {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+        
+        .slot-time input[type="time"] {
+            padding: 6px 10px;
+            border: 1px solid #D1D5DB;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .slot-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-inline {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+        }
+        
+        .checkbox-inline input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .slot-controls input[type="number"] {
+            padding: 6px;
+            border: 1px solid #D1D5DB;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .btn-icon.delete {
+            background: #EF4444;
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .btn-icon.delete:hover {
+            background: #DC2626;
+        }
+        
+        .no-slots {
+            text-align: center;
+            color: #9CA3AF;
+            padding: 20px;
+            font-style: italic;
+        }
+        
+        .package-image img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .package-image-placeholder {
+            width: 100%;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #F3F4F6;
+            color: #9CA3AF;
+            font-size: 48px;
+        }
+
+        /* ========================================
+           NOTIFICATIONS PANEL
+        ======================================== */
+        
+        .notifications-panel {
+            position: fixed;
+            right: -400px;
+            top: 0;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .notifications-panel.show {
+            right: 0;
+        }
+        
+        .notifications-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .notifications-header h3 {
+            margin: 0;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .notifications-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .btn-text {
+            background: none;
+            border: none;
+            color: #6366f1;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 4px 8px;
+        }
+        
+        .btn-text:hover {
+            color: #4f46e5;
+            text-decoration: underline;
+        }
+        
+        .notifications-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+        }
+        
+        .notification-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f3f4f6;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            gap: 12px;
+        }
+        
+        .notification-item:hover {
+            background: #f9fafb;
+        }
+        
+        .notification-item.important {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .notification-icon.new_booking {
+            background: #dbeafe;
+            color: #3b82f6;
+        }
+        
+        .notification-icon.payment_received {
+            background: #d1fae5;
+            color: #10b981;
+        }
+        
+        .notification-icon.session_completed {
+            background: #dcfce7;
+            color: #22c55e;
+        }
+        
+        .notification-icon.cancellation {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+        
+        .notification-icon.client_message {
+            background: #e0e7ff;
+            color: #6366f1;
+        }
+        
+        .notification-icon.system {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        .notification-content {
+            flex: 1;
+        }
+        
+        .notification-title {
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+        
+        .notification-message {
+            color: #6b7280;
+            font-size: 13px;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+        
+        .notification-meta {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        
+        .notification-ref {
+            background: #f3f4f6;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #4b5563;
+            font-weight: 500;
+        }
+        
+        .notification-time {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+        
+        .notification-action {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .notification-action:hover {
+            background: #4338ca;
+        }
+        
+        .no-notifications {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+        
+        .no-notifications i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        .no-notifications p {
+            margin: 0;
+            font-size: 14px;
+        }
+        
+        .loading-notifications {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f4f6;
+            border-top-color: #4f46e5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .notifications-panel {
+                width: 100%;
+                right: -100%;
+            }
+        }
+        
+        /* ========================================
+           PAYMENT PROOF DISPLAY
+        ======================================== */
+        
+        .payment-proof-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .proof-filename {
+            font-size: 13px;
+            color: #6b7280;
+            padding: 8px 12px;
+            background: #f9fafb;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .proof-filename::before {
+            content: "\f15b";
+            font-family: "Font Awesome 5 Free";
+            font-weight: 400;
+            color: #9ca3af;
+        }
+        
+        /* ========================================
+           BOOKED TIMES ENHANCEMENTS
+        ======================================== */
+        
+        .booked-day-section {
+            margin-bottom: 24px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .booked-day-section .day-header {
+            background: #f9fafb;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .booked-day-section .day-header h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #111827;
+        }
+        
+        .day-count {
+            background: #4f46e5;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .time-slots-list {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .booked-time-item {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        
+        .booked-time-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-color: #d1d5db;
+        }
+        
+        .booked-time-item.status-confirmed {
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .booked-time-item.status-completed {
+            border-left: 4px solid #10b981;
+        }
+        
+        .booked-time-item.status-pending {
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .time-badge {
+            background: #f3f4f6;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 140px;
+            justify-content: center;
+        }
+        
+        .time-badge.whole-day {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .time-badge i {
+            color: #9ca3af;
+        }
+        
+        .booking-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .booking-ref {
+            font-weight: 600;
+            color: #4f46e5;
+            font-size: 13px;
+        }
+        
+        .client-name,
+        .package-info,
+        .location-info {
+            font-size: 13px;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .client-name i,
+        .package-info i,
+        .location-info i {
+            width: 16px;
+            color: #9ca3af;
+        }
+        
+        .booking-status {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+        }
+        
+        .status-badge,
+        .payment-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+        
+        .price-tag {
+            font-weight: 700;
+            color: #10b981;
+            font-size: 14px;
+        }
+        
+        .btn-icon {
+            position: relative;
+            background: #f3f4f6;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #6b7280;
+        }
+        
+        .btn-icon:hover {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        /* Error message styling */
+        .error-message {
+            padding: 40px 20px;
+            text-align: center;
+            color: #ef4444;
+        }
+        
+        .error-message i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        .error-message p {
+            margin: 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <div class="logo-container">
+                    <img src="images/mty.png" alt="Matty Multimedia Logo" class="login-logo">
+                </div>
+                <h1 class="login-title">Admin Portal</h1>
+                <p class="login-subtitle">Sign in to your dashboard</p>
+            </div>
+            
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="adminEmail">
+                        <i class="fas fa-envelope"></i>
+                        Email Address
+                    </label>
+                    <input type="email" id="adminEmail" placeholder="admin@mattymultimedia.com" required autocomplete="email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="adminPassword">
+                        <i class="fas fa-lock"></i>
+                        Password
+                    </label>
+                    <div class="password-input">
+                        <input type="password" id="adminPassword" placeholder="Enter your password" required autocomplete="current-password">
+                        <button type="button" class="toggle-password" id="togglePassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-error" id="loginError"></div>
+                
+                <button type="submit" class="btn-login">
+                    <span class="btn-text">Sign In to Dashboard</span>
+                    <span class="btn-loader" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                </button>
+            </form>
+            
+            <div class="login-footer">
+                <p>© 2026 Matty Multimedia. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div id="dashboardContent" style="display: none;">
+        <!-- Notifications Panel -->
+        <div class="notifications-panel" id="notificationsPanel">
+            <div class="notifications-header">
+                <h3>
+                    <i class="fas fa-bell"></i>
+                    Notifications
+                </h3>
+                <div class="notifications-actions">
+                    <button class="btn-text" id="markAllReadBtn">
+                        Mark all as read
+                    </button>
+                    <button class="btn-icon" onclick="toggleNotificationsPanel()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="notifications-body" id="notificationsList">
+                <!-- Notifications will be populated here -->
+                <div class="loading-notifications">
+                    <div class="spinner"></div>
+                    <p>Loading notifications...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Desktop Sidebar -->
+        <aside class="sidebar desktop-sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <img src="images/mty.png" alt="Matty Multimedia Logo" class="sidebar-logo">
+                    <span class="logo-text">Matty Multimedia</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-page="overview">
+                    <i class="fas fa-home"></i>
+                    <span>Overview</span>
+                </a>
+                <a href="#" class="nav-item" data-page="bookings">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Bookings</span>
+                    <span class="badge" id="pendingBadge">0</span>
+                </a>
+                <a href="#" class="nav-item" data-page="clients">
+                    <i class="fas fa-users"></i>
+                    <span>Clients</span>
+                </a>
+                <a href="#" class="nav-item" data-page="packages">
+                    <i class="fas fa-box"></i>
+                    <span>Packages</span>
+                </a>
+                <a href="#" class="nav-item" data-page="bookedtimes">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Booked Times</span>
+                </a>
+                <a href="#" class="nav-item" data-page="analytics">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div class="admin-info">
+                        <p class="admin-name" id="adminName">Admin User</p>
+                        <p class="admin-role">Super Admin</p>
+                    </div>
+                </div>
+                <button class="btn-logout" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Mobile Bottom Navigation -->
+        <nav class="mobile-nav">
+            <a href="#" class="mobile-nav-item active" data-page="overview">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </a>
+            <a href="#" class="mobile-nav-item" data-page="bookings">
+                <i class="fas fa-calendar-check"></i>
+                <span>Bookings</span>
+                <span class="mobile-badge" id="mobilePendingBadge">0</span>
+            </a>
+            <a href="#" class="mobile-nav-item" data-page="clients">
+                <i class="fas fa-users"></i>
+                <span>Clients</span>
+            </a>
+            <a href="#" class="mobile-nav-item" data-page="packages">
+                <i class="fas fa-box"></i>
+                <span>Packages</span>
+            </a>
+            <a href="#" class="mobile-nav-item" data-page="more">
+                <i class="fas fa-ellipsis-h"></i>
+                <span>More</span>
+            </a>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <h2 id="pageTitle">Dashboard Overview</h2>
+                </div>
+                <div class="topbar-right">
+                    <button class="btn-icon" id="notificationBtn" onclick="toggleNotificationsPanel()">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+                    </button>
+                    <button class="btn-icon" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="content-area">
+                <!-- Overview Page -->
+                <div id="overviewPage" class="page-content active">
+                    <!-- Stats Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon blue">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="stat-details">
+                                <p class="stat-label">Total Bookings</p>
+                                <h3 class="stat-value" id="totalBookings">0</h3>
+                                <span class="stat-change positive">
+                                    <i class="fas fa-arrow-up"></i> +12%
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon green">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="stat-details">
+                                <p class="stat-label">Total Revenue</p>
+                                <h3 class="stat-value" id="totalRevenue">GH₵ 0</h3>
+                                <span class="stat-change positive">
+                                    <i class="fas fa-arrow-up"></i> +23%
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon purple">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-details">
+                                <p class="stat-label">Total Clients</p>
+                                <h3 class="stat-value" id="totalClients">0</h3>
+                                <span class="stat-change positive">
+                                    <i class="fas fa-arrow-up"></i> +8%
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon orange">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-details">
+                                <p class="stat-label">Pending Sessions</p>
+                                <h3 class="stat-value" id="pendingSessions">0</h3>
+                                <span class="stat-change">
+                                    <i class="fas fa-exclamation-circle"></i> Attention needed
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="charts-row">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>Revenue Trend</h3>
+                                <select id="revenueTimeframe">
+                                    <option value="7">7 Days</option>
+                                    <option value="30" selected>30 Days</option>
+                                    <option value="90">90 Days</option>
+                                </select>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>Booking Status</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="bookingStatusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="recent-activity">
+                        <div class="section-header">
+                            <h3>Recent Bookings</h3>
+                            <a href="#" class="view-all" data-page="bookings">View All</a>
+                        </div>
+                        <div class="activity-list" id="recentBookingsList">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bookings Page -->
+                <div id="bookingsPage" class="page-content">
+                    <div class="page-header">
+                        <div class="filters">
+                            <select id="statusFilter" class="filter-select">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                            <select id="categoryFilter" class="filter-select">
+                                <option value="">All Categories</option>
+                                <option value="Portrait">Portrait</option>
+                                <option value="Event">Event</option>
+                                <option value="Wedding">Wedding</option>
+                                <option value="Commercial">Commercial</option>
+                                <option value="Family">Family</option>
+                            </select>
+                        </div>
+                        <button class="btn-primary" id="exportBookingsBtn">
+                            <i class="fas fa-download"></i> 
+                            <span class="btn-text-desktop">Export PDF</span>
+                        </button>
+                    </div>
+
+                    <!-- Mobile Bookings List -->
+                    <div class="bookings-mobile" id="bookingsMobileList">
+                        <!-- Populated by JavaScript -->
+                    </div>
+
+                    <!-- Desktop Bookings Table -->
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Reference</th>
+                                    <th>Client</th>
+                                    <th>Package</th>
+                                    <th>Date & Time</th>
+                                    <th>Status</th>
+                                    <th>Amount</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookingsTableBody">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Clients Page -->
+                <div id="clientsPage" class="page-content">
+                    <div class="page-header">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="Search clients..." id="clientSearch">
+                        </div>
+                    </div>
+
+                    <div class="clients-grid" id="clientsGrid">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Packages Page -->
+                <div id="packagesPage" class="page-content">
+                    <div class="page-header">
+                        <button class="btn-primary" id="addPackageBtn">
+                            <i class="fas fa-plus"></i> Add Package
+                        </button>
+                    </div>
+
+                    <div class="packages-grid" id="packagesGrid">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Booked Times Page -->
+                <div id="bookedTimesPage" class="page-content">
+                    <div class="page-header">
+                        <div class="filters">
+                            <input type="date" id="bookedTimesStartDate" class="filter-input" />
+                            <input type="date" id="bookedTimesEndDate" class="filter-input" />
+                            <select id="bookedTimesStatusFilter" class="filter-select">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="in_progress">In Progress</option>
+                            </select>
+                            <button class="btn-secondary" id="refreshBookedTimesBtn">
+                                <i class="fas fa-filter"></i> Apply Filters
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="bookedTimesContainer" class="booked-times-container">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Analytics Page -->
+                <div id="analyticsPage" class="page-content">
+                    <div class="analytics-grid">
+                        <div class="chart-card full-width">
+                            <div class="chart-header">
+                                <h3>Monthly Revenue</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="monthlyRevenueChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>Categories</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>Sources</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="sourceChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- More Page (Mobile Only) -->
+                <div id="morePage" class="page-content">
+                    <div class="more-menu">
+                        <a href="#" class="more-item" data-page="analytics">
+                            <div class="more-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="more-info">
+                                <h4>Analytics</h4>
+                                <p>View reports and insights</p>
+                            </div>
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        
+                        <a href="#" class="more-item" data-page="bookedtimes">
+                            <div class="more-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <div class="more-info">
+                                <h4>Booked Times</h4>
+                                <p>View scheduled sessions</p>
+                            </div>
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        
+                        <a href="#" class="more-item" id="mobileLogoutBtn">
+                            <div class="more-icon danger">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </div>
+                            <div class="more-info">
+                                <h4>Logout</h4>
+                                <p>Sign out of your account</p>
+                            </div>
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="admin-profile-card">
+                        <div class="admin-avatar-large">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <h3 id="mobileAdminName">Admin User</h3>
+                        <p class="admin-email" id="mobileAdminEmail">admin@mattymultimedia.com</p>
+                        <span class="admin-badge">Super Admin</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Booking Detail Modal -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-booking">
+            <div class="modal-header">
+                <h3>Booking Details</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="bookingModalBody">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Action Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3 id="confirmTitle">Confirm Action</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">Are you sure you want to proceed?</p>
+                <div class="modal-actions">
+                    <button class="btn-secondary" id="confirmCancel">Cancel</button>
+                    <button class="btn-primary" id="confirmOk">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Package Management Modal -->
+    <div id="packageModal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3 id="packageModalTitle">Add New Package</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="packageForm" class="package-form">
+                    <input type="hidden" id="packageId">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="packageName">Package Name *</label>
+                            <input type="text" id="packageName" required placeholder="e.g., Studio Session - Pack 1">
+                        </div>
+                        <div class="form-group">
+                            <label for="packageCategory">Category *</label>
+                            <select id="packageCategory" required>
+                                <option value="">Select Category</option>
+                                <option value="Portrait">Portrait</option>
+                                <option value="Event">Event</option>
+                                <option value="Wedding">Wedding</option>
+                                <option value="Commercial">Commercial</option>
+                                <option value="Product">Product</option>
+                                <option value="Lifestyle">Lifestyle</option>
+                                <option value="Family">Family</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="packageSubtitle">Subtitle</label>
+                        <input type="text" id="packageSubtitle" placeholder="e.g., 5 Retouched Images">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="packageDescription">Description</label>
+                        <textarea id="packageDescription" rows="3" placeholder="Describe what this package includes..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="packagePrice">Price (GH₵) *</label>
+                            <input type="number" id="packagePrice" required min="0" step="0.01" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="packageDuration">Duration (minutes) *</label>
+                            <input type="number" id="packageDuration" required min="1" placeholder="60">
+                        </div>
+                        <div class="form-group">
+                            <label for="packageDeposit">Deposit Amount (GH₵)</label>
+                            <input type="number" id="packageDeposit" min="0" step="0.01" placeholder="0.00">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="packagePhotoCount">Photo Count</label>
+                            <input type="number" id="packagePhotoCount" min="0" placeholder="e.g., 10">
+                        </div>
+                        <div class="form-group">
+                            <label for="packageDisplayOrder">Display Order</label>
+                            <input type="number" id="packageDisplayOrder" min="0" placeholder="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="packageImage">Package Image</label>
+                        <input type="file" id="packageImage" accept="image/*">
+                        <div id="imagePreview" class="image-preview" style="display: none;"></div>
+                        <small class="form-help">Max file size: 5MB. Recommended: 800x600px or larger.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="packageIncludes">Package Includes (one per line)</label>
+                        <textarea id="packageIncludes" rows="4" placeholder="5 retouched images&#10;Professional lighting&#10;Studio backdrops"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="packageClientInstructions">Client Instructions</label>
+                        <textarea id="packageClientInstructions" rows="3" placeholder="Instructions for clients booking this package..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="packageCancellationPolicy">Cancellation Policy</label>
+                        <textarea id="packageCancellationPolicy" rows="2" placeholder="70% down payment required. Cancellations must be made 48 hours in advance."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group checkbox-group">
+                            <label>
+                                <input type="checkbox" id="packageFeatured">
+                                <span>Featured Package</span>
+                            </label>
+                        </div>
+                        <div class="form-group checkbox-group">
+                            <label>
+                                <input type="checkbox" id="packageRawIncluded">
+                                <span>Raw Photos Included</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="packageStatus">Status *</label>
+                        <select id="packageStatus" required>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="archived">Archived</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="packageAvailability">Availability *</label>
+                        <select id="packageAvailability" required>
+                            <option value="available">Available</option>
+                            <option value="limited">Limited</option>
+                            <option value="unavailable">Unavailable</option>
+                        </select>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i> Save Package
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Time Slots Management Modal -->
+    <div id="timeSlotsModal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>Manage Time Slots - <span id="timeSlotsPackageName"></span></h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="currentPackageId">
+                <div id="timeSlotsContainer">
+                    <!-- Populated by JavaScript -->
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="button" class="btn-primary" id="saveTimeSlotsBtn">
+                        <i class="fas fa-save"></i> Save Time Slots
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div id="exportModal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3>Export Report</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="exportReportType">Report Type</label>
+                    <select id="exportReportType" class="filter-select">
+                        <option value="overview">Overview Report</option>
+                        <option value="bookings">Bookings Report</option>
+                        <option value="financial">Financial Report</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="exportStartDate">Start Date</label>
+                    <input type="date" id="exportStartDate" class="filter-input" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="exportEndDate">End Date</label>
+                    <input type="date" id="exportEndDate" class="filter-input" />
+                </div>
+                
+                <div class="modal-actions">
+                    <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button class="btn-primary" onclick="exportToPDF()">
+                        <i class="fas fa-file-pdf"></i> Generate PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loader">
+            <i class="fas fa-spinner fa-pulse fa-3x"></i>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script>
+        // Initialize default dates
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date();
+            const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+            const thirtyDaysLater = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+            // Export modal dates
+            const exportStartDate = document.getElementById('exportStartDate');
+            const exportEndDate = document.getElementById('exportEndDate');
+            if (exportStartDate) exportStartDate.value = thirtyDaysAgo.toISOString().split('T')[0];
+            if (exportEndDate) exportEndDate.value = today.toISOString().split('T')[0];
+
+            // Booked times dates
+            const bookedTimesStartDate = document.getElementById('bookedTimesStartDate');
+            const bookedTimesEndDate = document.getElementById('bookedTimesEndDate');
+            if (bookedTimesStartDate) bookedTimesStartDate.value = today.toISOString().split('T')[0];
+            if (bookedTimesEndDate) bookedTimesEndDate.value = thirtyDaysLater.toISOString().split('T')[0];
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="admin-app.js"></script>
+</body>
+</html>

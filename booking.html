@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Meta Tags -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Matty Multimedia - Photography Booking</title>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="booking.css" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Custom Styles -->
+  <style>
+    /* ============================================
+       MOBILE NAVIGATION STYLES
+    ============================================ */
+    .mobile-nav-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition-base);
+      z-index: calc(var(--z-fixed) + 2);
+      cursor: pointer;
+      border: none;
+    }
+
+    .mobile-nav-close:active {
+      background: var(--color-accent);
+      color: var(--text-inverse);
+      transform: scale(0.95);
+    }
+
+    .mobile-nav-footer {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      padding: 0 2rem;
+    }
+
+    .developer-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 1rem;
+      background: rgba(0, 122, 255, 0.1);
+      border: 2px solid var(--color-accent);
+      border-radius: var(--radius-full);
+      color: var(--color-accent);
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: all var(--transition-base);
+      text-decoration: none;
+    }
+
+    .developer-link:active {
+      background: var(--color-accent);
+      color: white;
+      transform: scale(0.98);
+    }
+
+    .developer-link i {
+      font-size: 1.125rem;
+    }
+
+    /* ============================================
+       RESPONSIVE NAVIGATION
+    ============================================ */
+    @media (max-width: 1023px) {
+      .nav-desktop {
+        display: none;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .mobile-menu-btn {
+        display: none;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .developer-link:hover {
+        background: var(--color-accent);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 122, 255, 0.25);
+      }
+    }
+
+    /* ============================================
+       DEVELOPER CREDIT BADGE
+    ============================================ */
+    .developer-credit {
+      margin-top: 2rem;
+      padding: 1.5rem 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .developer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: transparent;
+      border-radius: var(--radius-md);
+      color: var(--text-tertiary);
+      font-weight: 400;
+      text-decoration: none;
+      transition: all var(--transition-base);
+      font-size: 0.813rem;
+      opacity: 0.6;
+    }
+
+    .developer-badge:active {
+      opacity: 1;
+      color: var(--text-secondary);
+    }
+
+    .badge-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+      opacity: 0.7;
+    }
+
+    .badge-content {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+
+    .badge-label {
+      font-size: 0.813rem;
+    }
+
+    .badge-name {
+      font-size: 0.813rem;
+      font-weight: 500;
+    }
+
+    .booking-flow-credit {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border-light);
+    }
+
+    @media (min-width: 768px) {
+      .developer-badge:hover {
+        opacity: 1;
+        color: var(--text-secondary);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .developer-badge {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.75rem;
+      }
+
+      .badge-icon {
+        font-size: 0.75rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ============================================
+       PRELOADER / LOADING SCREEN
+  ============================================ -->
+  <div class="preloader" id="preloader">
+    <div class="preloader-content">
+      <div class="preloader-logo">
+        <img src="images/mty.png" alt="Matty Photography Studio Logo">
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================
+       HEADER / NAVIGATION
+  ============================================ -->
+  <header class="header" id="header">
+    <div class="container">
+      <div class="header-content">
+        <!-- Logo -->
+        <a href="#home" class="logo">
+          <div class="logo-icon">
+            <img src="images/mty.png" alt="Logo">
+          </div>
+          <span class="logo-text">Matty_Multimedia</span>
+        </a>
+
+        <!-- Desktop Navigation -->
+        <nav class="nav-desktop">
+          <a href="#home" class="nav-link active">Home</a>
+          <a href="#portfolio" class="nav-link">Portfolio</a>
+          <a href="#services" class="nav-link">Services</a>
+          <a href="#about" class="nav-link">About</a>
+          <a href="#testimonials" class="nav-link">Reviews</a>
+          <a href="#contact" class="nav-link">Contact</a>
+        </nav>
+
+        <!-- Mobile Menu Button -->
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================
+       MOBILE NAVIGATION OVERLAY
+  ============================================ -->
+  <div class="mobile-nav" id="mobileNav">
+    <!-- Close Button -->
+    <button class="mobile-nav-close" id="mobileNavClose">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 6L6 18M6 6l12 12" />
+      </svg>
+    </button>
+
+    <!-- Navigation Links -->
+    <a href="#home" class="mobile-nav-link">Home</a>
+    <a href="#portfolio" class="mobile-nav-link">Portfolio</a>
+    <a href="#services" class="mobile-nav-link">Services</a>
+    <a href="#about" class="mobile-nav-link">About</a>
+    <a href="#testimonials" class="mobile-nav-link">Reviews</a>
+    <a href="#contact" class="mobile-nav-link">Contact</a>
+
+    <!-- Developer Credit -->
+    <div class="mobile-nav-footer">
+      <a href="https://kwamegelo.web.app" target="_blank" rel="noopener noreferrer" class="developer-link">
+        <span><i class="fas fa-code"></i>AnG</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- ============================================
+       PACKAGES SECTION
+  ============================================ -->
+  <section class="packages" id="packages">
+    <div class="container">
+      <!-- Section Header -->
+      <div class="section-header">
+        <h2 class="section-title">Photography Packages</h2>
+        <p class="section-subtitle">Choose the perfect package for your needs</p>
+      </div>
+
+      <!-- Filter Buttons -->
+      <div class="packages-filter-wrapper">
+        <div class="packages-filter">
+          <button class="filter-btn active" data-category="all">All Packages</button>
+          <button class="filter-btn" data-category="Portrait">Portrait</button>
+          <button class="filter-btn" data-category="Event">Event</button>
+          <button class="filter-btn" data-category="Wedding">Wedding</button>
+          <button class="filter-btn" data-category="Family">Family</button>
+        </div>
+      </div>
+
+      <!-- Packages Grid -->
+      <div class="packages-grid" id="packagesGrid">
+        <!-- Packages loaded dynamically by JavaScript -->
+      </div>
+
+      <!-- Developer Credit -->
+      <div class="developer-credit">
+        <a href="https://kwamegelo.web.app" target="_blank" rel="noopener noreferrer" class="developer-badge">
+          <span class="badge-icon">
+            <i class="fas fa-code"></i>
+          </span>
+          <span class="badge-content">
+            <span class="badge-label">Developed by</span>
+            <span class="badge-name">AnG</span>
+          </span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       AUTHENTICATION MODAL
+  ============================================ -->
+  <div class="modal" id="authModal">
+    <div class="modal-overlay" id="authModalOverlay"></div>
+    <div class="modal-container modal-sm">
+      <!-- Close Button -->
+      <button class="modal-close" id="authModalClose">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12" />
+        </svg>
+      </button>
+
+      <div class="modal-body">
+        <div class="auth-container">
+          <!-- Sign In Form -->
+          <div class="auth-form active" id="signInForm">
+            <h2 class="auth-title">Welcome Back</h2>
+            <p class="auth-subtitle">Sign in to continue your booking</p>
+
+            <form class="form" id="signInFormElement">
+              <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" id="signInEmail" class="form-input" required placeholder="you@example.com" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" id="signInPassword" class="form-input" required placeholder="••••••••" />
+              </div>
+
+              <div class="form-group">
+                <a href="#" class="forgot-password" id="forgotPasswordLink">Forgot password?</a>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block" id="signInBtn">
+                <span class="btn-text">Sign In</span>
+                <span class="btn-loader"></span>
+              </button>
+            </form>
+
+            <div class="auth-divider">
+              <span>or continue with</span>
+            </div>
+
+            <button class="btn btn-google" id="googleSignInBtn">
+              <svg width="20" height="20" viewBox="0 0 20 20">
+                <path fill="#4285F4" d="M19.6 10.23c0-.82-.1-1.42-.25-2.05H10v3.72h5.5c-.15.96-.74 2.31-2.04 3.22v2.45h3.16c1.89-1.73 2.98-4.3 2.98-7.34z" />
+                <path fill="#34A853" d="M13.46 15.13c-.83.59-1.96 1-3.46 1-2.64 0-4.88-1.74-5.68-4.15H1.07v2.52C2.72 17.75 6.09 20 10 20c2.7 0 4.96-.89 6.62-2.42l-3.16-2.45z" />
+                <path fill="#FBBC05" d="M3.99 10c0-.69.12-1.35.32-1.97V5.51H1.07A9.973 9.973 0 000 10c0 1.61.39 3.14 1.07 4.49l3.24-2.52c-.2-.62-.32-1.28-.32-1.97z" />
+                <path fill="#EA4335" d="M10 3.88c1.88 0 3.13.81 3.85 1.48l2.84-2.76C14.96.99 12.7 0 10 0 6.09 0 2.72 2.25 1.07 5.51l3.24 2.52C5.12 5.62 7.36 3.88 10 3.88z" />
+              </svg>
+              Sign in with Google
+            </button>
+
+            <p class="auth-switch">
+              Don't have an account? <a href="#" id="showSignUp">Sign up</a>
+            </p>
+          </div>
+
+          <!-- Sign Up Form -->
+          <div class="auth-form" id="signUpForm">
+            <h2 class="auth-title">Create Account</h2>
+            <p class="auth-subtitle">Join us to book your photography session</p>
+
+            <form class="form" id="signUpFormElement">
+              <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" id="signUpName" class="form-input" required placeholder="John Doe" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" id="signUpEmail" class="form-input" required placeholder="you@example.com" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <input type="tel" id="signUpPhone" class="form-input" required placeholder="+233 XX XXX XXXX" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" id="signUpPassword" class="form-input" required placeholder="••••••••" minlength="8" />
+              </div>
+
+              <div class="form-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="termsCheckbox" required />
+                  <span>I agree to the <a href="#" id="showTermsLink">Terms & Conditions</a></span>
+                </label>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block" id="signUpBtn">
+                <span class="btn-text">Create Account</span>
+                <span class="btn-loader"></span>
+              </button>
+            </form>
+
+            <div class="auth-divider">
+              <span>or continue with</span>
+            </div>
+
+            <button class="btn btn-google" id="googleSignUpBtn">
+              <svg width="20" height="20" viewBox="0 0 20 20">
+                <path fill="#4285F4" d="M19.6 10.23c0-.82-.1-1.42-.25-2.05H10v3.72h5.5c-.15.96-.74 2.31-2.04 3.22v2.45h3.16c1.89-1.73 2.98-4.3 2.98-7.34z" />
+                <path fill="#34A853" d="M13.46 15.13c-.83.59-1.96 1-3.46 1-2.64 0-4.88-1.74-5.68-4.15H1.07v2.52C2.72 17.75 6.09 20 10 20c2.7 0 4.96-.89 6.62-2.42l-3.16-2.45z" />
+                <path fill="#FBBC05" d="M3.99 10c0-.69.12-1.35.32-1.97V5.51H1.07A9.973 9.973 0 000 10c0 1.61.39 3.14 1.07 4.49l3.24-2.52c-.2-.62-.32-1.28-.32-1.97z" />
+                <path fill="#EA4335" d="M10 3.88c1.88 0 3.13.81 3.85 1.48l2.84-2.76C14.96.99 12.7 0 10 0 6.09 0 2.72 2.25 1.07 5.51l3.24 2.52C5.12 5.62 7.36 3.88 10 3.88z" />
+              </svg>
+              Sign up with Google
+            </button>
+
+            <p class="auth-switch">
+              Already have an account? <a href="#" id="showSignIn">Sign in</a>
+            </p>
+          </div>
+
+          <!-- Password Reset Form -->
+          <div class="auth-form" id="resetPasswordForm">
+            <h2 class="auth-title">Reset Password</h2>
+            <p class="auth-subtitle">Enter your email to receive reset instructions</p>
+
+            <form class="form" id="resetPasswordFormElement">
+              <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" id="resetEmail" class="form-input" required placeholder="you@example.com" />
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block" id="resetPasswordBtn">
+                <span class="btn-text">Send Reset Link</span>
+                <span class="btn-loader"></span>
+              </button>
+            </form>
+
+            <p class="auth-switch">
+              Remember your password? <a href="#" id="backToSignIn">Sign in</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================
+       TERMS & CONDITIONS MODAL
+  ============================================ -->
+  <div class="modal" id="termsModal">
+    <div class="modal-overlay" id="termsModalOverlay"></div>
+    <div class="modal-container">
+      <!-- Close Button -->
+      <button class="modal-close" id="termsModalClose">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12" />
+        </svg>
+      </button>
+
+      <div class="modal-body">
+        <div class="modal-content">
+          <div class="terms-content">
+            <h2 class="terms-title">Terms & Conditions</h2>
+
+            <div class="terms-text">
+              <h3>1. Booking & Payment</h3>
+              <p>All bookings require a non-refundable deposit to secure your session date. The deposit amount varies by package and will be clearly stated during the booking process.</p>
+
+              <h3>2. Cancellation Policy</h3>
+              <p>Cancellations made more than 48 hours before the scheduled session will receive a full refund minus the deposit. Cancellations within 48 hours are non-refundable.</p>
+
+              <h3>3. Rescheduling</h3>
+              <p>You may reschedule your session up to 24 hours before the scheduled time, subject to availability. Multiple rescheduling requests may incur additional fees.</p>
+
+              <h3>4. Photo Delivery</h3>
+              <p>Edited photos will be delivered within 2-3 weeks after the session via digital download. Physical prints and albums may take additional time.</p>
+
+              <h3>5. Copyright & Usage</h3>
+              <p>Matty Multimedia retains copyright of all images. Clients receive a license for personal use. Commercial use requires written permission and may incur additional fees.</p>
+
+              <h3>6. Weather & Circumstances</h3>
+              <p>For outdoor sessions, we'll reschedule in case of severe weather. For events, we'll work with available conditions unless circumstances make photography impossible.</p>
+
+              <h3>7. Client Responsibilities</h3>
+              <p>Clients are responsible for arriving on time, being prepared (makeup, outfits, props), and providing accurate session details.</p>
+
+              <h3>8. Liability</h3>
+              <p>Matty Multimedia is not liable for injuries during sessions. Clients participate at their own risk and are responsible for their own safety.</p>
+
+              <h3>9. Portfolio Usage</h3>
+              <p>Unless explicitly requested otherwise, Matty Multimedia may use session photos for portfolio, marketing, and promotional purposes.</p>
+
+              <h3>10. Agreement</h3>
+              <p>By booking a session, you agree to these terms and conditions. These terms may be updated periodically, and continued use of our services constitutes acceptance of any changes.</p>
+            </div>
+
+            <div class="terms-actions">
+              <button class="btn btn-primary btn-lg" id="acceptTermsBtn">I Understand & Accept</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================
+       BOOKING FLOW (FULL-SCREEN)
+  ============================================ -->
+  <div class="booking-flow-fullscreen" id="bookingFlow">
+    <!-- Header -->
+    <div class="booking-flow-header">
+      <h2 class="booking-flow-title">Book Your Session</h2>
+      <button class="booking-flow-close" id="bookingFlowClose">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="booking-flow-body">
+      <div class="booking-flow-container">
+        <!-- Progress Indicator -->
+        <div class="booking-progress">
+          <div class="progress-step active" data-step="1">
+            <div class="progress-number">1</div>
+            <span>Package</span>
+          </div>
+          <div class="progress-line"></div>
+          <div class="progress-step" data-step="2">
+            <div class="progress-number">2</div>
+            <span>Date & Time</span>
+          </div>
+          <div class="progress-line"></div>
+          <div class="progress-step" data-step="3">
+            <div class="progress-number">3</div>
+            <span>Details</span>
+          </div>
+          <div class="progress-line"></div>
+          <div class="progress-step" data-step="4">
+            <div class="progress-number">4</div>
+            <span>Payment</span>
+          </div>
+        </div>
+
+        <!-- Step 1: Package Selection -->
+        <div class="booking-step active" id="bookingStep1">
+          <h2 class="step-title">Select Your Package</h2>
+          <div class="package-selection" id="packageSelection">
+            <!-- Loaded dynamically by JavaScript -->
+          </div>
+        </div>
+
+        <!-- Step 2: Date & Time Selection -->
+        <div class="booking-step" id="bookingStep2">
+          <h2 class="step-title">Choose Date & Time</h2>
+          <div class="datetime-container">
+            <!-- Calendar -->
+            <div class="calendar-container">
+              <div class="calendar-header">
+                <button class="calendar-nav" id="prevMonth">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 18l-6-6 6-6" />
+                  </svg>
+                </button>
+                <h3 class="calendar-title" id="calendarTitle">January 2026</h3>
+                <button class="calendar-nav" id="nextMonth">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </button>
+              </div>
+
+              <div class="calendar-weekdays">
+                <div class="weekday">Sun</div>
+                <div class="weekday">Mon</div>
+                <div class="weekday">Tue</div>
+                <div class="weekday">Wed</div>
+                <div class="weekday">Thu</div>
+                <div class="weekday">Fri</div>
+                <div class="weekday">Sat</div>
+              </div>
+
+              <div class="calendar-days" id="calendarDays">
+                <!-- Generated dynamically by JavaScript -->
+              </div>
+            </div>
+
+            <!-- Time Selection -->
+            <div class="time-selection">
+              <h3 class="time-title">Select Time</h3>
+
+              <div class="time-input-container">
+                <label class="form-label">Start Time</label>
+                <input type="time" id="startTime" class="form-input time-input" />
+              </div>
+
+              <div class="time-input-container">
+                <label class="form-label">End Time</label>
+                <input type="time" id="endTime" class="form-input time-input" />
+              </div>
+
+              <div class="time-info" id="timeInfo"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Session Details -->
+        <div class="booking-step" id="bookingStep3">
+          <h2 class="step-title">Session Details</h2>
+          <form class="booking-form" id="bookingDetailsForm">
+            <div class="form-group">
+              <label class="form-label">Session Location</label>
+              <select id="sessionLocation" class="form-input">
+                <option value="">Select a location</option>
+                <option value="Studio">Studio</option>
+                <option value="Outdoor">Outdoor</option>
+                <option value="Client Location">Client Location</option>
+                <option value="To be discussed">To be discussed</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Number of People</label>
+                <input type="number" id="numberOfPeople" class="form-input" min="1" value="1" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Outfit Changes</label>
+                <input type="number" id="outfitChanges" class="form-input" min="1" value="1" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Special Requests</label>
+              <textarea id="specialRequests" class="form-input form-textarea" rows="4" placeholder="Any special requirements or requests..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="bookingTermsAgreed" required />
+                <span>I agree to the <a href="#" id="showTermsFromBooking">Terms and Conditions</a></span>
+              </label>
+            </div>
+          </form>
+        </div>
+
+        <!-- Step 4: Payment -->
+        <div class="booking-step" id="bookingStep4">
+          <h2 class="step-title">Payment</h2>
+          <div class="payment-container">
+            <!-- Payment Summary Card -->
+            <div class="payment-summary-card">
+              <h3 class="summary-title">Booking Summary</h3>
+              <div class="summary-content" id="paymentSummary">
+                <!-- Package Details -->
+                <div class="summary-item">
+                  <span class="summary-label">Package:</span>
+                  <span class="summary-value" id="summaryPackage">-</span>
+                </div>
+
+                <div class="summary-item">
+                  <span class="summary-label">Date:</span>
+                  <span class="summary-value" id="summaryDate">-</span>
+                </div>
+
+                <div class="summary-item">
+                  <span class="summary-label">Time:</span>
+                  <span class="summary-value" id="summaryTime">-</span>
+                </div>
+
+                <div class="summary-item">
+                  <span class="summary-label">Duration:</span>
+                  <span class="summary-value" id="summaryDuration">-</span>
+                </div>
+
+                <div class="summary-item">
+                  <span class="summary-label">Location:</span>
+                  <span class="summary-value" id="summaryLocation">-</span>
+                </div>
+
+                <div class="summary-divider"></div>
+
+                <!-- Pricing -->
+                <div class="summary-item">
+                  <span class="summary-label">Package Price:</span>
+                  <span class="summary-value" id="summaryPrice">GH₵ 0.00</span>
+                </div>
+
+                <div class="summary-item">
+                  <span class="summary-label">Deposit (50%):</span>
+                  <span class="summary-value summary-highlight" id="summaryDeposit">GH₵ 0.00</span>
+                </div>
+
+                <div class="summary-item summary-total">
+                  <span class="summary-label">Amount to Pay Now:</span>
+                  <span class="summary-value" id="summaryTotal">GH₵ 0.00</span>
+                </div>
+
+                <div class="summary-note">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="16" x2="12" y2="12"/>
+                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                  </svg>
+                  <span>Balance due on session day</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Instructions -->
+            <div class="payment-instructions-card">
+              <h3 class="payment-title">Payment Instructions</h3>
+              <p class="payment-text">Please make your deposit payment via Mobile Money:</p>
+
+              <div class="payment-details">
+                <div class="payment-method">
+                  <div class="payment-method-header">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                    </svg>
+                    <strong>MTN Mobile Money</strong>
+                  </div>
+
+                  <!-- Copyable MoMo Number -->
+                  <div class="momo-number-wrapper">
+                    <span class="momo-label">📱 Tap to copy number:</span>
+                    <div class="momo-number-copy" data-number="0534571119">
+                      0534571119
+                    </div>
+                    <span class="copy-hint">Click the number above to copy it instantly</span>
+                  </div>
+
+                  <p class="payment-name">Name: Matthew Amponsah</p>
+                </div>
+              </div>
+
+              <!-- Payment Section Divider -->
+              <div class="payment-section-divider"></div>
+
+              <!-- Payment Proof Upload -->
+              <div class="form-group">
+                <label class="form-label">Upload Payment Proof *</label>
+                <div class="file-upload" id="fileUpload">
+                  <input type="file" id="paymentProof" accept="image/*,.pdf" />
+                  <div class="file-upload-content">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                    </svg>
+                    <p>Click to upload payment proof</p>
+                    <span>PNG, JPG or PDF (max. 5MB)</span>
+                  </div>
+                </div>
+                <div class="file-preview" id="filePreview"></div>
+              </div>
+
+              <!-- Transaction Reference -->
+              <div class="form-group">
+                <label class="form-label">Transaction Reference (Optional)</label>
+                <input type="text" id="transactionRef" class="form-input" placeholder="e.g., MM123456789" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Developer Credit -->
+        <div class="developer-credit booking-flow-credit">
+          <a href="https://kwamegelo.web.app" target="_blank" rel="noopener noreferrer" class="developer-badge">
+            <span class="badge-icon"></span>
+            <span class="badge-content">
+              <span class="badge-label">Developed by</span>
+              <i class="fas fa-code"></i>
+              <span class="badge-name">AnG</span>
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flow Actions -->
+    <div class="booking-flow-actions">
+      <button class="btn btn-secondary" id="prevStepBtn" style="display: none;">
+        ← Previous
+      </button>
+      <button class="btn btn-primary" id="nextStepBtn">
+        Next →
+      </button>
+      <button class="btn btn-primary btn-lg" id="submitBookingBtn" style="display: none;">
+        <span class="btn-text">Complete Booking</span>
+        <span class="btn-loader"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================================
+       SUCCESS SCREEN (FULL-SCREEN)
+  ============================================ -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-content">
+      <div class="success-icon">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 6L9 17l-5-5" />
+        </svg>
+      </div>
+
+      <h2 class="success-title">Booking Confirmed!</h2>
+      <p class="success-message">
+        Your booking has been received. We'll review your payment and send you a confirmation message shortly.
+      </p>
+      <p class="success-reference">
+        Reference: <strong id="bookingReference">-</strong>
+      </p>
+
+      <button class="btn btn-primary btn-lg" id="successCloseBtn">Back to Home</button>
+
+      <!-- Developer Credit -->
+      <div class="developer-credit booking-flow-credit">
+        <a href="https://kwamegelo.web.app" target="_blank" rel="noopener noreferrer" class="developer-badge">
+          <span class="badge-icon"></span>
+          <span class="badge-content">
+            <span class="badge-label">Developed by</span>
+            <i class="fas fa-code"></i>
+            <span class="badge-name">AnG</span>
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================
+       USER DASHBOARD
+  ============================================ -->
+  <section class="dashboard hidden" id="dashboard">
+    <div class="container">
+      <!-- Dashboard Header -->
+      <div class="dashboard-header">
+        <div>
+          <h2 class="section-title">My Dashboard</h2>
+          <p class="dashboard-welcome" id="dashboardWelcome">Welcome back!</p>
+        </div>
+        <button class="btn btn-secondary" id="signOutBtn">Sign Out</button>
+      </div>
+
+      <!-- Dashboard Stats -->
+      <div class="dashboard-stats">
+        <div class="stat-card">
+          <div class="stat-icon">📅</div>
+          <div class="stat-value" id="totalBookings">0</div>
+          <div class="stat-label">Total Bookings</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">✓</div>
+          <div class="stat-value" id="completedBookings">0</div>
+          <div class="stat-label">Completed</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-value" id="pendingBookings">0</div>
+          <div class="stat-label">Pending</div>
+        </div>
+      </div>
+
+      <!-- Bookings List -->
+      <div class="bookings-section">
+        <h3 class="bookings-title">My Bookings</h3>
+        <div class="bookings-list" id="bookingsList">
+          <!-- Loaded dynamically by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Developer Credit -->
+      <div class="developer-credit booking-flow-credit">
+        <a href="https://kwamegelo.web.app" target="_blank" rel="noopener noreferrer" class="developer-badge">
+          <span class="badge-icon"></span>
+          <span class="badge-content">
+            <span class="badge-label">Developed by</span>
+            <i class="fas fa-code"></i>
+            <span class="badge-name">AnG</span>
+          </span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       TOAST NOTIFICATIONS
+  ============================================ -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ============================================
+       MOMO COPY FUNCTIONALITY SCRIPT
+  ============================================ -->
+  <script>
+    /**
+     * Setup Mobile Money number copy-to-clipboard functionality
+     * Provides visual feedback when users copy the MoMo number
+     */
+    function setupMoMoCopyButtons() {
+      const momoNumbers = document.querySelectorAll('.momo-number-copy');
+
+      momoNumbers.forEach(element => {
+        element.style.cursor = 'pointer';
+        element.title = 'Click to copy';
+
+        // Remove any existing listeners by cloning
+        const newElement = element.cloneNode(true);
+        element.parentNode.replaceChild(newElement, element);
+
+        newElement.addEventListener('click', async () => {
+          const number = newElement.getAttribute('data-number');
+
+          try {
+            // Modern clipboard API
+            await navigator.clipboard.writeText(number);
+
+            // Visual feedback
+            newElement.classList.add('copied');
+
+            // Show success toast
+            if (typeof Utils !== 'undefined' && Utils.showToast) {
+              Utils.showToast('MoMo number copied! ✓', 'success');
+            }
+
+            // Reset after 2 seconds
+            setTimeout(() => {
+              newElement.classList.remove('copied');
+            }, 2000);
+
+          } catch (err) {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = number;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.select();
+
+            try {
+              document.execCommand('copy');
+              newElement.classList.add('copied');
+
+              if (typeof Utils !== 'undefined' && Utils.showToast) {
+                Utils.showToast('MoMo number copied! ✓', 'success');
+              }
+
+              setTimeout(() => {
+                newElement.classList.remove('copied');
+              }, 2000);
+            } catch (err2) {
+              if (typeof Utils !== 'undefined' && Utils.showToast) {
+                Utils.showToast('Failed to copy. Please copy manually.', 'error');
+              }
+            } finally {
+              document.body.removeChild(textArea);
+            }
+          }
+        });
+      });
+    }
+
+    // Initialize MoMo copy functionality when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setupMoMoCopyButtons);
+    } else {
+      setupMoMoCopyButtons();
+    }
+  </script>
+
+  <!-- ============================================
+       EXTERNAL SCRIPTS
+  ============================================ -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>

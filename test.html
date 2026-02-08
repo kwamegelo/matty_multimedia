@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supabase Connection Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 { color: #333; margin-top: 0; }
+    .status {
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      font-weight: 500;
+    }
+    .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+    .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    pre {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      font-size: 12px;
+    }
+    button {
+      background: #007aff;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      margin: 10px 5px 10px 0;
+    }
+    button:hover { background: #0051d5; }
+    .code-block {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 15px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      overflow-x: auto;
+    }
+    .step {
+      background: #f8f9fa;
+      padding: 15px;
+      margin: 10px 0;
+      border-left: 4px solid #007aff;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 Supabase Connection Diagnostic</h1>
+    
+    <div id="results">
+      <div class="info">
+        Click the button below to test your Supabase connection...
+      </div>
+    </div>
+
+    <button onclick="runDiagnostics()">🔬 Run Diagnostics</button>
+    <button onclick="showFixInstructions()">📝 Show Fix Instructions</button>
+
+    <div id="fixInstructions" style="display: none; margin-top: 30px;">
+      <h2>🔧 How to Fix Supabase Connection</h2>
+      
+      <div class="step">
+        <h3>Step 1: Get Your Supabase Credentials</h3>
+        <ol>
+          <li>Go to <a href="https://supabase.com/dashboard" target="_blank">Supabase Dashboard</a></li>
+          <li>Select your project</li>
+          <li>Click <strong>Settings</strong> (gear icon in sidebar)</li>
+          <li>Click <strong>API</strong></li>
+          <li>Copy these two values:
+            <ul>
+              <li><strong>Project URL</strong> (looks like: https://abcdefgh.supabase.co)</li>
+              <li><strong>anon/public key</strong> (very long string starting with "eyJ...")</li>
+            </ul>
+          </li>
+        </ol>
+      </div>
+
+      <div class="step">
+        <h3>Step 2: Update config.js</h3>
+        <p>Open your <code>config.js</code> file and replace with your actual values:</p>
+        <div class="code-block">
+const SUPABASE_CONFIG = {
+  url: 'https://YOUR_PROJECT_ID.supabase.co', // ← Paste your Project URL here
+  anonKey: 'eyJhbGciOiJIUzI1...' // ← Paste your anon key here (very long)
+};
+
+// Initialize Supabase client
+let supabaseClient;
+
+try {
+  if (window.supabase && window.supabase.createClient) {
+    supabaseClient = window.supabase.createClient(
+      SUPABASE_CONFIG.url,
+      SUPABASE_CONFIG.anonKey
+    );
+    console.log('✅ Supabase initialized');
+  }
+} catch (error) {
+  console.error('❌ Supabase error:', error);
+}
+
+window.supabaseClient = supabaseClient;
+        </div>
+      </div>
+
+      <div class="step">
+        <h3>Step 3: Verify File Location</h3>
+        <p>Make sure <code>config.js</code> is in the <strong>parent directory</strong> of your admin folder:</p>
+        <div class="code-block">
+your-project/
+├── config.js          ← Should be here (parent directory)
+├── index.html
+├── styles.css
+├── app.js
+└── admin/
+    ├── admin.html
+    ├── admin-styles.css
+    └── admin-app.js
+        </div>
+      </div>
+
+      <div class="step">
+        <h3>Step 4: Test Again</h3>
+        <p>After updating <code>config.js</code>:</p>
+        <ol>
+          <li>Save the file</li>
+          <li>Refresh this page (Ctrl+R or Cmd+R)</li>
+          <li>Click "Run Diagnostics" button above</li>
+          <li>Should show all green checkmarks ✅</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- Supabase Client Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Load config.js -->
+  <script src="config.js"></script>
+
+  <script>
+    function showFixInstructions() {
+      const instructions = document.getElementById('fixInstructions');
+      instructions.style.display = instructions.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function runDiagnostics() {
+      const resultsDiv = document.getElementById('results');
+      let html = '<h2>Diagnostic Results:</h2>';
+
+      // Test 1: Supabase library loaded
+      html += '<div class="status ' + (typeof window.supabase !== 'undefined' ? 'success' : 'error') + '">';
+      html += typeof window.supabase !== 'undefined' 
+        ? '✅ Test 1: Supabase library loaded successfully'
+        : '❌ Test 1: Supabase library NOT loaded';
+      html += '</div>';
+
+      // Test 2: config.js loaded
+      html += '<div class="status ' + (typeof SUPABASE_CONFIG !== 'undefined' ? 'success' : 'error') + '">';
+      html += typeof SUPABASE_CONFIG !== 'undefined'
+        ? '✅ Test 2: config.js file loaded'
+        : '❌ Test 2: config.js file NOT found';
+      html += '</div>';
+
+      // Test 3: Config has values
+      if (typeof SUPABASE_CONFIG !== 'undefined') {
+        const hasUrl = SUPABASE_CONFIG.url && SUPABASE_CONFIG.url !== 'YOUR_SUPABASE_URL';
+        const hasKey = SUPABASE_CONFIG.anonKey && SUPABASE_CONFIG.anonKey !== 'YOUR_SUPABASE_ANON_KEY';
+        
+        html += '<div class="status ' + (hasUrl ? 'success' : 'error') + '">';
+        html += hasUrl
+          ? '✅ Test 3a: Supabase URL configured'
+          : '❌ Test 3a: Supabase URL NOT configured (still has placeholder)';
+        html += '</div>';
+
+        html += '<div class="status ' + (hasKey ? 'success' : 'error') + '">';
+        html += hasKey
+          ? '✅ Test 3b: Supabase API Key configured'
+          : '❌ Test 3b: Supabase API Key NOT configured (still has placeholder)';
+        html += '</div>';
+
+        if (hasUrl && hasKey) {
+          html += '<div class="info"><strong>Current Config:</strong><pre>';
+          html += 'URL: ' + SUPABASE_CONFIG.url + '\n';
+          html += 'Key: ' + SUPABASE_CONFIG.anonKey.substring(0, 20) + '...' + '</pre></div>';
+        }
+      }
+
+      // Test 4: Supabase client initialized
+      html += '<div class="status ' + (window.supabaseClient ? 'success' : 'error') + '">';
+      html += window.supabaseClient
+        ? '✅ Test 4: Supabase client initialized'
+        : '❌ Test 4: Supabase client NOT initialized';
+      html += '</div>';
+
+      // Test 5: Try to connect to Supabase
+      if (window.supabaseClient) {
+        html += '<div class="info">⏳ Test 5: Testing connection to Supabase...</div>';
+        resultsDiv.innerHTML = html;
+
+        try {
+          const { data, error } = await window.supabaseClient
+            .from('packages')
+            .select('count', { count: 'exact', head: true });
+
+          if (error) {
+            html += '<div class="status error">';
+            html += '❌ Test 5: Connection FAILED<br>';
+            html += '<strong>Error:</strong> ' + error.message;
+            html += '</div>';
+            
+            if (error.message.includes('JWT')) {
+              html += '<div class="warning"><strong>Fix:</strong> Your API key is invalid. Get the correct one from Supabase Dashboard → Settings → API</div>';
+            } else if (error.message.includes('relation') || error.message.includes('does not exist')) {
+              html += '<div class="warning"><strong>Fix:</strong> Database tables not set up. Run the SQL files (01-07) in Supabase SQL Editor</div>';
+            }
+          } else {
+            html += '<div class="status success">';
+            html += '✅ Test 5: Successfully connected to Supabase!<br>';
+            html += 'Database is reachable and ready to use.';
+            html += '</div>';
+          }
+        } catch (err) {
+          html += '<div class="status error">';
+          html += '❌ Test 5: Connection FAILED<br>';
+          html += '<strong>Error:</strong> ' + err.message;
+          html += '</div>';
+        }
+      }
+
+      // Final verdict
+      html += '<hr><h3>📊 Summary:</h3>';
+      if (window.supabaseClient) {
+        html += '<div class="success"><strong>Good news!</strong> Your Supabase connection is working. If the admin dashboard still fails, the issue is elsewhere (check browser console for errors).</div>';
+      } else if (typeof SUPABASE_CONFIG === 'undefined') {
+        html += '<div class="error"><strong>Problem:</strong> config.js file not found or not loading. Make sure it exists in the parent directory of admin/</div>';
+      } else if (SUPABASE_CONFIG.url === 'YOUR_SUPABASE_URL') {
+        html += '<div class="error"><strong>Problem:</strong> You need to update config.js with your actual Supabase credentials. Click "Show Fix Instructions" button above.</div>';
+      } else {
+        html += '<div class="error"><strong>Problem:</strong> Supabase client failed to initialize. Check your credentials and try again.</div>';
+      }
+
+      resultsDiv.innerHTML = html;
+    }
+  </script>
+</body>
+</html>
